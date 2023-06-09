@@ -1,0 +1,10 @@
+{
+  "webhookUrl": "https://ehsan.ngrok.io/webhook",
+  "interactionUrl": null,
+  "federatedSearchUrl": null,
+  "redirectUris": null,
+  "federatedSearchEnabled": false,
+  "webhookSubscriptions": [
+    "member.updated"
+  ]
+}
