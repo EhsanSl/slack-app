@@ -62,3 +62,21 @@ export const handleUninstalledWebhook = async (
     status: WebhookStatus.Succeeded,
   }
 }
+
+// export const handleUninstalledWebhookII = async (
+//   webhook: AppUninstalledWebhook,
+// ): Promise<GeneralWebhookResponse> => {
+//   logger.debug('handleUninstalledWebhook called', { webhook })
+//   try { 
+//     const { networkId } = webhook as { networkId: string };
+//     await IncomingWebhookModel.deleteMany({networkId,}).lean();
+//     return {
+//       type: webhook.type,
+//       status: WebhookStatus.Succeeded,
+//       data: {},
+//     };
+//   } catch(error) { 
+//     logger.error(error)
+//     return getServiceUnavailableError(webhook)
+//   }
+// }

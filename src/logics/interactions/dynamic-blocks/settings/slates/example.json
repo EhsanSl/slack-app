@@ -1,0 +1,141 @@
+{
+    "title": "Interactive Settings",
+    "alert": "You need to setup your config before using the app.",
+    "setupDescription": "You can change your configs by clicking on the below button.",
+    "card": {
+        "header": {
+            "title": "{{title}}"
+        },
+        "content": {
+            "container": {
+                "size": "lg",
+                "spacing": "sm",
+                "if": [
+                    {
+                        "condition": "settings.toastMessage",
+                        "then": {
+                            "container": {
+                                "direction": "grid",
+                                "spacing": "md",
+                                "container": {
+                                    "size": "sm",
+                                    "alignment": "center",
+                                    "button": {
+                                        "callbackId": "open-toast",
+                                        "variant": "secondary",
+                                        "fullWidth": "true",
+                                        "leadingIcon": "PlusIcon",
+                                        "text": "Send toast"
+                                    }
+                                },
+                                "container": {
+                                    "size": "md",
+                                    "text": "By clicking on this button, we will show you a toast based on your configs."
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "condition": "settings.redirectionUrl",
+                        "then": {
+                            "divider": {
+                                "padding": "none"
+                            },
+                            "container": {
+                                "direction": "grid",
+                                "spacing": "md",
+                                "container": {
+                                    "size": "sm",
+                                    "alignment": "center",
+                                    "button": {
+                                        "callbackId": "redirect",
+                                        "variant": "danger",
+                                        "fullWidth": "true",
+                                        "leadingIcon": "ExternalLinkIcon",
+                                        "text": "Open URL"
+                                    }
+                                },
+                                "container": {
+                                    "size": "md",
+                                    "text": "By clicking on this button, we will redirect you to a URL based on your configs."
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            "else": [
+                {
+                    "alert": {
+                        "status": "warning",
+                        "title": "{{alert}}"
+                    }
+                },
+                {
+                    "form": {
+                        "callbackId": "save",
+                        "defaultValues": "{{jsonSettings}}",
+                        "container": {
+                            "size": "lg",
+                            "spacing": "sm",
+                            "input": {
+                                "required": true,
+                                "name": "toastMessage",
+                                "label": "Toast message",
+                                "placeholder": "i.e. My toast!",
+                                "helperText": "You can set any message you want."
+                            },
+                            "select": {
+                                "required": true,
+                                "name": "toastStatus",
+                                "label": "Toast status",
+                                "helperText": "Select the status of your toast. [Learn more](https://bettermode.com)",
+                                "items": "{{toastStatuses}}"
+                            },
+                            "input": {
+                                "name": "redirectionUrl",
+                                "label": "Redirect URL"
+                            },
+                            "toggle": {
+                                "name": "externalRedirect",
+                                "label": "Redirect to the URL in a new tab",
+                                "helperText": "By enabling this option, the redirection will work in a new tab."
+                            },
+                            "button": {
+                                "type": "submit",
+                                "variant": "primary",
+                                "text": "Save"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "if": {
+            "condition": "settings.toastMessage",
+            "then": [
+                {
+                    "divider": {
+                        "padding": "none"
+                    }
+                },
+                {
+                    "header": {
+                        "title": "Configs",
+                        "description": "You can change your configs by clicking on the below button."
+                    }
+                },
+                {
+                    "content": {
+                        "button": {
+                            "callbackId": "open-modal",
+                            "variant": "outline",
+                            "leadingIcon": "AdjustmentsIcon",
+                            "text": "Edit config"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,16 +1,18 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { Types } from '@tribeplatform/gql-client';
-import { createLogger, logger } from '@/utils/logger';
 import { SERVER_URL } from '@/config';
-import SlackService, { UpdateMessagePayload } from '@/services/slack.services';
-import IncomingWebhookModel from '@/models/incomingWebhook.model';
 import { IncomingWebhook as IncomingWebhookType } from '@/interfaces/incoming-webhook.interface';
+import IncomingWebhookModel from '@/models/incomingWebhook.model';
+import SlackService, { UpdateMessagePayload } from '@/services/slack.services';
 import auth from '@/utils/auth';
+import { createLogger } from '@/utils/logger';
 import { getTribeClient, listMemberByIds } from '@/utils/tribe_client';
-import { uniq, toMap } from '@utils/util';
+import { Types } from '@tribeplatform/gql-client';
 import { Member } from '@tribeplatform/gql-client/types';
-import { Logger } from '@tribeplatform/node-logger'
+import { Logger } from '@tribeplatform/node-logger';
+import { toMap, uniq } from '@utils/util';
+
+// import { WebhookType } from '@enums'
 
 const DEFAULT_SETTINGS = {
   webhooks: [],

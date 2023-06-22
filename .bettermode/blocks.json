@@ -1,4 +1,10 @@
 {
-  "defaults": [],
+  "defaults": [
+    {
+      "key": "settings",
+      "interactionUrl": "https://tribe-native-app.ngrok.io/webhook/interaction",
+      "contexts": null
+    }
+  ],
   "customs": []
 }
