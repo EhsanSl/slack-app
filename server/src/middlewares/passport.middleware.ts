@@ -1,12 +1,12 @@
-import { CLIENT_ID, CLIENT_SECRET, GRAPHQL_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET } from '@config';
+import { CLIENT_ID, CLIENT_SECRET, GRAPHQL_URL } from '@config';
 
-import passport from 'passport';
-import express from 'express';
-import IncomingWebhookModel from '@/models/incomingWebhook.model';
 import { IncomingWebhook as IncomingWebhookType } from '@/interfaces/incoming-webhook.interface';
-import { createLogger } from '@/utils/logger';
+import IncomingWebhookModel from '@/models/incomingWebhook.model';
 import SlackService from '@/services/slack.services';
+import { createLogger } from '@/utils/logger';
 import { GlobalClient, Types } from '@tribeplatform/gql-client';
+import express from 'express';
+import passport from 'passport-slack';
 
 const logger = createLogger('PassportMiddleware')
 
@@ -43,8 +43,8 @@ const init = (app: express.Application) => {
     new SlackStrategy(
       {
         name: 'webhook',
-        clientID: SLACK_CLIENT_ID,
-        clientSecret: SLACK_CLIENT_SECRET,
+        clientID: CLIENT_ID,
+        clientSecret: CLIENT_SECRET,
         scope: ['incoming-webhook', 'chat:write:bot'],
         skipUserProfile: true,
         passReqToCallback: true,

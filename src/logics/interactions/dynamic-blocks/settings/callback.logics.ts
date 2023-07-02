@@ -1,30 +1,30 @@
 import { InteractionType, WebhookStatus, WebhookType } from '@enums'
 import { InteractionInput, InteractionWebhookResponse } from '@interfaces'
-import { Network, NetworkSettings, ToastStatus } from '@prisma/client'
-import { NetworkRepository } from '@repositories'
+import { NetworkSettings } from '@prisma/client'
+import { NetworkSettingsRepository } from '@repositories'
 
 import { getInteractionNotSupportedError } from '../../../error.logics'
 
+import { getConnectSlackUrl } from '@/logics/oauth.logics'
+import { getNetworkClient } from '@clients'
 import { globalLogger } from '@utils'
 import { SettingsBlockCallback } from './constants'
 import { getNetworkSettingsModalSlate, getNetworkSettingsSlate } from './slate.logics'
-
 const logger = globalLogger.setContext(`SettingsDynamicBlock`)
 
 const getSaveCallbackResponse = async (options: {
-  network: Network
+  networkSettings: NetworkSettings
   data: InteractionInput<NetworkSettings>
 }): Promise<InteractionWebhookResponse> => {
   logger.debug('getNetworkSettingsInteractionCallbackResponse called', { options })
 
   const {
-    network,
+    networkSettings,
     data: { interactionId, inputs },
   } = options
 
-  const updatedNetwork = await NetworkRepository.update(network.networkId, {
-    settings: inputs,
-  })
+  const updatedNetwork = await NetworkSettingsRepository.update(networkSettings.networkId, inputs)
+
   return {
     type: WebhookType.Interaction,
     status: WebhookStatus.Succeeded,
@@ -33,7 +33,7 @@ const getSaveCallbackResponse = async (options: {
         {
           id: interactionId,
           type: InteractionType.Show,
-          slate: await getNetworkSettingsSlate(updatedNetwork.settings),
+          slate: await getNetworkSettingsSlate(updatedNetwork),
         },
       ],
     },
@@ -41,19 +41,17 @@ const getSaveCallbackResponse = async (options: {
 }
 
 const getModalSaveCallbackResponse = async (options: {
-  network: Network
+  networkSettings: NetworkSettings
   data: InteractionInput<NetworkSettings>
 }): Promise<InteractionWebhookResponse> => {
   logger.debug('getNetworkSettingsInteractionCallbackResponse called', { options })
 
   const {
-    network,
+    networkSettings,
     data: { interactionId, inputs, dynamicBlockKey },
   } = options
 
-  await NetworkRepository.update(network.networkId, {
-    settings: inputs,
-  })
+  await NetworkSettingsRepository.update(networkSettings.networkId, inputs)
   return {
     type: WebhookType.Interaction,
     status: WebhookStatus.Succeeded,
@@ -76,7 +74,7 @@ const getModalSaveCallbackResponse = async (options: {
 }
 
 const getOpenModalCallbackResponse = async (options: {
-  network: Network
+  networkSettings: NetworkSettings
   data: InteractionInput<NetworkSettings>
 }): Promise<InteractionWebhookResponse> => ({
   type: WebhookType.Interaction,
@@ -86,7 +84,7 @@ const getOpenModalCallbackResponse = async (options: {
       {
         id: options.data.interactionId,
         type: InteractionType.OpenModal,
-        slate: await getNetworkSettingsModalSlate(options.network.settings),
+        slate: await getNetworkSettingsModalSlate(options.networkSettings),
         props: {
           size: 'lg',
           title: 'Update configs',
@@ -97,32 +95,44 @@ const getOpenModalCallbackResponse = async (options: {
   },
 })
 
-const getOpenToastCallbackResponse = async (options: {
-  network: Network
-  data: InteractionInput<NetworkSettings>
-}): Promise<InteractionWebhookResponse> => ({
-  type: WebhookType.Interaction,
-  status: WebhookStatus.Succeeded,
-  data: {
-    interactions: [
-      {
-        id: 'open-toast',
-        type: InteractionType.OpenToast,
-        props: {
-          status: options.network.settings?.toastStatus || ToastStatus.WARNING,
-          title:
-            options.network.settings?.toastMessage || 'Please set your toast message!',
-          description: 'Description goes here',
-        },
-      },
-    ],
-  },
-})
+// const getOpenToastCallbackResponse = async (options: {
+//   networkSettings: NetworkSettings
+//   data: InteractionInput<NetworkSettings>
+// }): Promise<InteractionWebhookResponse> => ({
+//   type: WebhookType.Interaction,
+//   status: WebhookStatus.Succeeded,
+//   data: {
+//     interactions: [
+//       {
+//         id: 'open-toast',
+//         type: InteractionType.OpenToast,
+//         props: {
+//           status: options.network.settings?.toastStatus || ToastStatus.WARNING,
+//           title:
+//             options.network.settings?.toastMessage || 'Please set your toast message!',
+//           description: 'Description goes here',
+//         },
+//       },
+//     ],
+//   },
+// })
 
 const getRedirectCallbackResponse = async (options: {
-  network: Network
+  networkSettings: NetworkSettings
   data: InteractionInput<NetworkSettings>
-}): Promise<InteractionWebhookResponse> => ({
+  networkId: string
+}): Promise<InteractionWebhookResponse> => { 
+  const {
+    data: {actorId },
+    networkId , 
+  } = options
+  const gqlClient = await getNetworkClient(networkId)
+  const network = await gqlClient.query({
+    name: 'network',
+    args: 'basic',
+  })
+
+  return ({
   type: WebhookType.Interaction,
   status: WebhookStatus.Succeeded,
   data: {
@@ -131,17 +141,40 @@ const getRedirectCallbackResponse = async (options: {
         id: 'new-interaction-id',
         type: InteractionType.Redirect,
         props: {
-          url: options.network.settings?.redirectionUrl || 'https://bettermode.com',
-          external: options.network.settings?.externalRedirect,
+          url: await getConnectSlackUrl( {network , actorId} ) , 
+          external: false,
         },
       },
     ],
   },
-})
+})}
+
+// export const getRevokeCallbackResponse = async(options: { 
+//   networkSettings: NetworkSettings
+//   data: InteractionInput<NetworkSettings>
+//   networkId: string 
+// }): Promise<InteractionWebhookResponse> => { 
+//   logger.debug('getRevokeCallbackResponse called', {options})
+
+//   const { 
+//     data: {interactionId}, 
+//     networkId,
+//   } = options 
+
+//   try{ 
+//     await NetworkSettingsRepository.delete(networkId)
+//   } catch (error){ 
+//     logger.error(error)
+//     return getServiceUnavailableError(options)
+//   }
+//   return getDisconnectedNetworkSettingsSlate({interactionId})
+// }
+
 
 export const getCallbackResponse = async (options: {
-  network: Network
+  networkSettings: NetworkSettings
   data: InteractionInput<NetworkSettings>
+  networkId: string
 }): Promise<InteractionWebhookResponse> => {
   logger.debug('getCallbackResponse called', { options })
 
@@ -156,10 +189,12 @@ export const getCallbackResponse = async (options: {
       return getModalSaveCallbackResponse(options)
     case SettingsBlockCallback.OpenModal:
       return getOpenModalCallbackResponse(options)
-    case SettingsBlockCallback.OpenToast:
-      return getOpenToastCallbackResponse(options)
+    // case SettingsBlockCallback.OpenToast:
+      // return getOpenToastCallbackResponse(options)
     case SettingsBlockCallback.Redirect:
       return getRedirectCallbackResponse(options)
+    // case SettingsBlockCallback.Revoke:
+      // return getRevokeCallbackResponse(options) 
     default:
       return getInteractionNotSupportedError('callbackId', callbackId)
   }

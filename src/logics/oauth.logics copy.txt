@@ -1,0 +1,45 @@
+import { SERVER_URL } from '@config';
+import { SlackAuthInfo, SlackState } from '@interfaces';
+import { NetworkRepository } from '@repositories';
+import { Network } from '@tribeplatform/gql-client/types';
+import { getNetworkUrl, getSlackAppUrl, globalLogger, signJwt } from '@utils';
+
+const logger = globalLogger.setContext('oauth.logics');
+export const connectToSlack = async (options: { authInfo: SlackAuthInfo; state: SlackState }) => {
+  const { authInfo, state } = options;
+  const { networkId, actorId, subdomain } = state;
+  const {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    profile: {
+      _json: {
+        user: { id, name, email },
+      },
+    },
+    accessToken,
+    // refreshToken,
+  } = authInfo;
+  logger.debug('connectToSlack called', { authInfo, state });
+  await NetworkRepository.upsert(networkId, {
+    memberId: actorId,
+    id: String(id),
+    accessToken,
+    name,
+    email,
+    subdomain: subdomain,
+    federatedSearch: false,
+    brandId: null,
+    ticketCreationSettings: {
+      enabled: false,
+    },
+  });
+};
+
+export const getConnectSlackUrl = async (options: { network: Network; actorId: string; subdomain: string }) => {
+  const { network, actorId, subdomain } = options;
+  return `${SERVER_URL}/oauth?jwt=${await signJwt({
+    networkId: network.id,
+    actorId,
+    subdomain,
+    redirectUrl: getSlackAppUrl(getNetworkUrl(network)),
+  })}`;
+};

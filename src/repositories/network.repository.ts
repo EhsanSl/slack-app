@@ -1,37 +1,37 @@
-import { Network, Prisma, PrismaClient } from '@prisma/client'
+import { NetworkSettings, Prisma, PrismaClient } from '@prisma/client'
 
 const client = new PrismaClient()
 
-export const NetworkRepository = {
-  create: (data: Prisma.NetworkCreateArgs['data']): Promise<Network> => {
-    return client.network.create({ data })
+export const NetworkSettingsRepository = {
+  create: (data: Prisma.NetworkSettingsCreateArgs['data']): Promise<NetworkSettings> => {
+    return client.networkSettings.create({ data })
   },
   update: (
     networkId: string,
-    data: Prisma.NetworkUpdateArgs['data'],
-  ): Promise<Network> => {
-    return client.network.update({ where: { networkId }, data })
+    data: Prisma.NetworkSettingsUpdateArgs['data'],
+  ): Promise<NetworkSettings> => {
+    return client.networkSettings.update({ where: { networkId }, data })
   },
   upsert: (
     networkId: string,
-    data: Omit<Prisma.NetworkCreateArgs['data'], 'networkId'>,
-  ): Promise<Network> => {
-    return client.network.upsert({
+    data: Omit<Prisma.NetworkSettingsCreateArgs['data'], 'networkId'>,
+  ): Promise<NetworkSettings> => {
+    return client.networkSettings.upsert({
       create: { networkId, ...data },
       update: data,
       where: { networkId },
     })
   },
-  delete: (networkId: string): Promise<Network> => {
-    return client.network.delete({ where: { networkId } })
+  delete: (networkId: string): Promise<NetworkSettings> => {
+    return client.networkSettings.delete({ where: { networkId } })
   },
-  findMany: (args?: Prisma.NetworkFindManyArgs): Promise<Network[]> => {
-    return client.network.findMany(args)
+  findMany: (args?: Prisma.NetworkSettingsFindManyArgs): Promise<NetworkSettings[]> => {
+    return client.networkSettings.findMany(args)
   },
-  findUniqueOrThrow: (networkId: string): Promise<Network> => {
-    return client.network.findUniqueOrThrow({ where: { networkId } })
+  findUniqueOrThrow: (networkId: string): Promise<NetworkSettings> => {
+    return client.networkSettings.findUniqueOrThrow({ where: { networkId } })
   },
-  findUnique: (networkId: string): Promise<Network> => {
-    return client.network.findUnique({ where: { networkId } })
+  findUnique: (networkId: string): Promise<NetworkSettings> => {
+    return client.networkSettings.findUnique({ where: { networkId } })
   },
 }

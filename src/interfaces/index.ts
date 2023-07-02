@@ -6,6 +6,8 @@ export * from './oauth.interface'
 export * from './request.interface'
 export * from './settings.interface'
 export * from './shortcut-states.interface'
+export * from './slack.interface'
 export * from './template-mapping.interface'
 export * from './webhook-response.interface'
 export * from './webhook.interface'
+

@@ -10,33 +10,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Network {
+model NetworkSettings {
   id String @id @default(auto()) @map("_id") @db.ObjectId
+  // email String?
   createdAt  DateTime   @default(now())
   updatedAt DateTime @updatedAt
-  
+
   networkId String @unique
   domain String @unique
   name String
   graphqlUrl String
 
-  settings NetworkSettings?
+  // refreshToken String?
+  // accessToken String?
+
+  error String
 }
 
-type NetworkSettings {
-  toastMessage String?
-  toastStatus ToastStatus?
-  redirectionUrl String
-  externalRedirect Boolean @default(false)
-}
 
-enum ToastStatus {
-  ERROR
-  WARNING
-  SUCCESS
-  INFO
-  NEUTRAL
-}
 
 model Member {
   id String @id @default(auto()) @map("_id") @db.ObjectId

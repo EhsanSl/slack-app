@@ -5,14 +5,14 @@ import {
   InteractionWebhookResponse,
 } from '@interfaces'
 import { NetworkSettings } from '@prisma/client'
-import { NetworkRepository } from '@repositories'
+import { NetworkSettingsRepository } from '@repositories'
 import { PermissionContext } from '@tribeplatform/gql-client/types'
 
 import { getInteractionNotSupportedError } from '../../../error.logics'
 
 import { globalLogger } from '@utils'
 import { getCallbackResponse } from './callback.logics'
-import { getNetworkSettingsSlate } from './slate.logics'
+import { getDisconnectedNetworkSettingsSlate, getNetworkSettingsSlate } from './slate.logics'
 
 const logger = globalLogger.setContext(`SettingsDynamicBlock`)
 
@@ -27,11 +27,30 @@ const getNetworkSettingsInteractionResponse = async (options: {
     data: { interactionId, callbackId },
   } = options
 
-  const network = await NetworkRepository.findUniqueOrThrow(networkId)
+  const networkSettings = await NetworkSettingsRepository.findUnique(networkId)
 
   if (callbackId) {
-    return getCallbackResponse({ network, data: options.data })
+    return getCallbackResponse({ networkId, networkSettings , data: options.data })
   }
+
+  if(!networkSettings) { 
+    return { 
+      type: WebhookType.Interaction, 
+      status: WebhookStatus.Succeeded, 
+      data: { 
+        interactions: [ 
+          {
+            id: interactionId, 
+            type: InteractionType.Show,
+            slate: await getDisconnectedNetworkSettingsSlate()
+          }
+        ]
+      }
+    }
+
+
+  } 
+
 
   return {
     type: WebhookType.Interaction,
@@ -41,7 +60,7 @@ const getNetworkSettingsInteractionResponse = async (options: {
         {
           id: interactionId,
           type: InteractionType.Show,
-          slate: await getNetworkSettingsSlate(network.settings),
+          slate: await getNetworkSettingsSlate(networkSettings),
         },
       ],
     },

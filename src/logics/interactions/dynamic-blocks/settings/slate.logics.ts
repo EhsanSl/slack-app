@@ -1,6 +1,6 @@
 import { join } from 'path'
 
-import { NetworkSettings, ToastStatus } from '@prisma/client'
+import { NetworkSettings } from '@prisma/client'
 import { LiquidConvertor } from '@tribeplatform/slate-kit/convertors'
 import { SlateDto } from '@tribeplatform/slate-kit/dtos'
 import { globalLogger } from '@utils'
@@ -18,20 +18,26 @@ export const getNetworkSettingsSlate = async (
     'utf8',
   )
   const convertor = new LiquidConvertor(liquid)
-  const cleanSettings: NetworkSettings = { toastStatus: ToastStatus.INFO, ...settings }
   const slate = await convertor.toSlate({
-    variables: {
-      toastStatuses: JSON.stringify([
-        { value: ToastStatus.SUCCESS, text: 'Success' },
-        { value: ToastStatus.ERROR, text: 'Error' },
-        { value: ToastStatus.WARNING, text: 'Warning' },
-        { value: ToastStatus.INFO, text: 'Info' },
-        { value: ToastStatus.NEUTRAL, text: 'Neutral' },
-      ]),
-      settings: cleanSettings,
-      jsonSettings: JSON.stringify(cleanSettings),
-    },
+    variables: {},
   })
+  logger.info("Hey this is the slate", {slate})
+  return slate
+}
+
+
+export const getDisconnectedNetworkSettingsSlate = async (): Promise<SlateDto> => {
+  logger.debug('getDisconnectedNetworkSettingsSlate called')
+
+  const liquid = await readFile(
+    join(__dirname, 'slates', 'network-settings.slate.liquid'),
+    'utf8',
+  )
+  const convertor = new LiquidConvertor(liquid)
+  const slate = await convertor.toSlate({
+    variables: {},
+  })
+  logger.info("Hey this is the slate", {slate})
   return slate
 }
 
@@ -45,18 +51,9 @@ export const getNetworkSettingsModalSlate = async (
     'utf8',
   )
   const convertor = new LiquidConvertor(liquid)
-  const cleanSettings: NetworkSettings = { toastStatus: ToastStatus.INFO, ...settings }
+
   const slate = await convertor.toSlate({
-    variables: {
-      toastStatuses: JSON.stringify([
-        { value: ToastStatus.SUCCESS, text: 'Success' },
-        { value: ToastStatus.ERROR, text: 'Error' },
-        { value: ToastStatus.WARNING, text: 'Warning' },
-        { value: ToastStatus.INFO, text: 'Info' },
-        { value: ToastStatus.NEUTRAL, text: 'Neutral' },
-      ]),
-      jsonSettings: JSON.stringify(cleanSettings),
-    },
+    variables: {},
   })
   return slate
 }
