@@ -1,0 +1,4 @@
+blockparser ,  util,ts and logger.ts has been moved from the previous integration over to be modified and used 
+there are libraries that cannot be installed due to technicall isuees like slackify-html and class-validator thats required for slackify0html . 
+ 
+ 

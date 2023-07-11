@@ -3,6 +3,6 @@ export enum SettingsBlockCallback {
   ModalSave = 'modal-save',
   OpenModal = 'open-modal',
   OpenToast = 'open-toast',
-  Redirect = 'redirect',
-  Revoke = 'revoke',
+  AuthRedirect = 'redirect',
+  OauthRevoke = 'revoke',
 }

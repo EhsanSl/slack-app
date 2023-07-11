@@ -17,12 +17,13 @@ model NetworkSettings {
   updatedAt DateTime @updatedAt
 
   networkId String @unique
-  domain String @unique
+  memberId String @unique 
   name String
   graphqlUrl String
 
-  // refreshToken String?
-  // accessToken String?
+  refresh String
+  access String
+  email String? 
 
   error String
 }

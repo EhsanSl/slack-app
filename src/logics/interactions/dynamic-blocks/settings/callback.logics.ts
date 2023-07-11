@@ -1,15 +1,21 @@
 import { InteractionType, WebhookStatus, WebhookType } from '@enums'
-import { InteractionInput, InteractionWebhookResponse } from '@interfaces'
+import {
+  InteractionInput,
+  InteractionWebhook,
+  InteractionWebhookResponse,
+  RedirectInteractionProps
+} from '@interfaces'
 import { NetworkSettings } from '@prisma/client'
 import { NetworkSettingsRepository } from '@repositories'
 
-import { getInteractionNotSupportedError } from '../../../error.logics'
+import { getInteractionNotSupportedError, getServiceUnavailableError } from '@logics'
 
 import { getConnectSlackUrl } from '@/logics/oauth.logics'
 import { getNetworkClient } from '@clients'
 import { globalLogger } from '@utils'
 import { SettingsBlockCallback } from './constants'
-import { getNetworkSettingsModalSlate, getNetworkSettingsSlate } from './slate.logics'
+import { getDisconnectedNetworkSettingsSlate, getNetworkSettingsModalSlate, getNetworkSettingsSlate } from './slate.logics'
+
 const logger = globalLogger.setContext(`SettingsDynamicBlock`)
 
 const getSaveCallbackResponse = async (options: {
@@ -117,37 +123,7 @@ const getOpenModalCallbackResponse = async (options: {
 //   },
 // })
 
-const getRedirectCallbackResponse = async (options: {
-  networkSettings: NetworkSettings
-  data: InteractionInput<NetworkSettings>
-  networkId: string
-}): Promise<InteractionWebhookResponse> => { 
-  const {
-    data: {actorId },
-    networkId , 
-  } = options
-  const gqlClient = await getNetworkClient(networkId)
-  const network = await gqlClient.query({
-    name: 'network',
-    args: 'basic',
-  })
 
-  return ({
-  type: WebhookType.Interaction,
-  status: WebhookStatus.Succeeded,
-  data: {
-    interactions: [
-      {
-        id: 'new-interaction-id',
-        type: InteractionType.Redirect,
-        props: {
-          url: await getConnectSlackUrl( {network , actorId} ) , 
-          external: false,
-        },
-      },
-    ],
-  },
-})}
 
 // export const getRevokeCallbackResponse = async(options: { 
 //   networkSettings: NetworkSettings
@@ -170,11 +146,89 @@ const getRedirectCallbackResponse = async (options: {
 //   return getDisconnectedNetworkSettingsSlate({interactionId})
 // }
 
+const getRedirectCallbackResponse = async ({
+  props,
+  interactionId,
+}: {
+  props: RedirectInteractionProps
+  interactionId?: string
+}): Promise<InteractionWebhookResponse> => ({
+  type: WebhookType.Interaction,
+  status: WebhookStatus.Succeeded,
+  data: {
+    interactions: [
+      {
+        id: interactionId || 'new-interaction-id',
+        type: InteractionType.Redirect,
+        props,
+      },
+    ],
+  },
+})
 
-export const getCallbackResponse = async (options: {
+const getAuthRedirectCallbackResponse = async (options: {
   networkSettings: NetworkSettings
   data: InteractionInput<NetworkSettings>
   networkId: string
+}): Promise<InteractionWebhookResponse> => {
+  const {
+    data: { actorId },
+    networkId,
+  } = options
+  const gqlClient = await getNetworkClient(networkId)
+  const network = await gqlClient.query({
+    name: 'network',
+    args: 'basic',
+  })
+
+  return getRedirectCallbackResponse({
+    props: {
+      url: await getConnectSlackUrl({
+        network,
+        actorId,
+      }),
+      external: false,
+    },
+  })
+}
+
+const getOauthRevokeCallbackResponse = async (
+  options: InteractionWebhook,
+): Promise<InteractionWebhookResponse> => {
+  logger.debug('getAuthRedirectCallbackResponse called', { options })
+  logger.debug('handleUninstalledWebhook called', { options })
+  const {
+    networkId,
+    data: { interactionId },
+  } = options
+  try {
+    await NetworkSettingsRepository.delete(networkId)
+  } catch (error) {
+    logger.error(error)
+    return getServiceUnavailableError(options)
+  }
+
+  // return getDisconnectedSettingsResponse({ interactionId })
+  return {
+    type: WebhookType.Interaction,
+    status: WebhookStatus.Succeeded,
+    data: {
+      interactions: [
+        {
+          id: interactionId,
+          type: InteractionType.Show,
+          slate: await getDisconnectedNetworkSettingsSlate(),
+        },
+      ],
+    },
+  }
+}
+
+
+export const getCallbackResponse = async (options: {
+  networkId: string
+  networkSettings: NetworkSettings
+  data: InteractionInput<NetworkSettings>
 }): Promise<InteractionWebhookResponse> => {
   logger.debug('getCallbackResponse called', { options })
 
@@ -190,11 +244,11 @@ export const getCallbackResponse = async (options: {
     case SettingsBlockCallback.OpenModal:
       return getOpenModalCallbackResponse(options)
     // case SettingsBlockCallback.OpenToast:
-      // return getOpenToastCallbackResponse(options)
-    case SettingsBlockCallback.Redirect:
-      return getRedirectCallbackResponse(options)
-    // case SettingsBlockCallback.Revoke:
-      // return getRevokeCallbackResponse(options) 
+    // return getOpenToastCallbackResponse(options)
+    case SettingsBlockCallback.AuthRedirect:
+      return getAuthRedirectCallbackResponse(options)
+    case SettingsBlockCallback.OauthRevoke:
+    // return getOauthRevokeCallbackResponse(options) 
     default:
       return getInteractionNotSupportedError('callbackId', callbackId)
   }

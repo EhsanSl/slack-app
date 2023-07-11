@@ -1,5 +1,5 @@
 import { connectToSlack } from '@logics'
-import { consumerExtractorMiddleware, SlackOAuthMiddleware } from '@middlewares'
+import { consumerExtractorMiddleware, slackOAuthMiddleware } from '@middlewares'
 import { globalLogger } from '@utils'
 import { Request, Response } from 'express'
 import { Controller, Get, HttpCode, Req, Res, UseBefore } from 'routing-controllers'
@@ -10,7 +10,7 @@ export class OAuthController {
   readonly logger = globalLogger.setContext(OAuthController.name)
 
   @Get()
-  @UseBefore(consumerExtractorMiddleware, SlackOAuthMiddleware)
+  @UseBefore(consumerExtractorMiddleware, slackOAuthMiddleware)
   @OpenAPI({ summary: 'Redirects to the Slack for authorization.' })
   @HttpCode(302)
   async redirect(): Promise<void> {
@@ -18,11 +18,11 @@ export class OAuthController {
   }
 
   @Get('/callback')
-  @UseBefore(consumerExtractorMiddleware, SlackOAuthMiddleware)
+  @UseBefore(consumerExtractorMiddleware, slackOAuthMiddleware)
   @OpenAPI({ summary: 'Redirects to the app settings page after authentication.' })
   @HttpCode(302)
   async callback(@Req() request: Request, @Res() response: Response): Promise<Response> {
-    this.logger.verbose('Received oauth callback request', {
+    this.logger.log('Received oauth callback request', {
       user: request.user,
       state: request.state,
     })

@@ -1,4 +1,4 @@
-import { InteractionType, WebhookStatus, WebhookType } from '@enums'
+import { ErrorCode, WebhookStatus, WebhookType } from '@enums'
 import {
   InteractionInput,
   InteractionWebhook,
@@ -12,7 +12,7 @@ import { getInteractionNotSupportedError } from '../../../error.logics'
 
 import { globalLogger } from '@utils'
 import { getCallbackResponse } from './callback.logics'
-import { getDisconnectedNetworkSettingsSlate, getNetworkSettingsSlate } from './slate.logics'
+import { getConnectedSettingsResponse, getDisconnectedSettingsResponse } from './helpers'
 
 const logger = globalLogger.setContext(`SettingsDynamicBlock`)
 
@@ -21,10 +21,10 @@ const getNetworkSettingsInteractionResponse = async (options: {
   data: InteractionInput<NetworkSettings>
 }): Promise<InteractionWebhookResponse> => {
   logger.debug('getNetworkSettingsInteractionResponse called', { options })
-
+  
   const {
     networkId,
-    data: { interactionId, callbackId },
+    data: { interactionId, callbackId }, 
   } = options
 
   const networkSettings = await NetworkSettingsRepository.findUnique(networkId)
@@ -33,38 +33,20 @@ const getNetworkSettingsInteractionResponse = async (options: {
     return getCallbackResponse({ networkId, networkSettings , data: options.data })
   }
 
-  if(!networkSettings) { 
-    return { 
-      type: WebhookType.Interaction, 
-      status: WebhookStatus.Succeeded, 
-      data: { 
-        interactions: [ 
-          {
-            id: interactionId, 
-            type: InteractionType.Show,
-            slate: await getDisconnectedNetworkSettingsSlate()
-          }
-        ]
-      }
-    }
-
-
-  } 
-
-
-  return {
-    type: WebhookType.Interaction,
-    status: WebhookStatus.Succeeded,
-    data: {
-      interactions: [
-        {
-          id: interactionId,
-          type: InteractionType.Show,
-          slate: await getNetworkSettingsSlate(networkSettings),
-        },
-      ],
-    },
+  if (!networkSettings){ 
+    return getDisconnectedSettingsResponse({interactionId})
   }
+
+  if (!interactionId) {
+    return {
+      type: WebhookType.Interaction,
+      status: WebhookStatus.Failed,
+      errorCode: ErrorCode.InvalidRequest,
+      errorMessage: 'Interaction ID is required.',
+    }
+  }
+
+  return getConnectedSettingsResponse({ interactionId, settings: options.data })
 }
 
 export const getSettingsInteractionResponse = async (

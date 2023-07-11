@@ -5,7 +5,8 @@
       "source.organizeImports": true,
       "source.fixAll.prettier": true,
       "source.fixAll.eslint": true
-    }
+    },
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
@@ -17,5 +18,14 @@
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
   "eslint.format.enable": true,
-  "cSpell.words": ["dtos", "middlewares", "openapi", "bettermode", "uninstallation"]
+  "cSpell.words": [
+    "dtos",
+    "middlewares",
+    "openapi",
+    "bettermode",
+    "uninstallation"
+  ],
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }
