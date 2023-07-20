@@ -25,6 +25,9 @@ export const NetworkSettingsRepository = {
   delete: (networkId: string): Promise<NetworkSettings> => {
     return client.networkSettings.delete({ where: { networkId } })
   },
+  deleteMany: (networkId?: string): Promise<Prisma.BatchPayload> => {
+    return client.networkSettings.deleteMany({ where: { networkId } || {} })
+  },
   findMany: (args?: Prisma.NetworkSettingsFindManyArgs): Promise<NetworkSettings[]> => {
     return client.networkSettings.findMany(args)
   },

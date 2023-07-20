@@ -9,7 +9,10 @@ import { Strategy as SlackPassportStrategy } from 'passport-slack-oauth2';
 
 
 const logger = globalLogger.setContext('slack-oauth.middleware');
-const OAUTH_SCOPES = ['identity.basic', 'identity.email', 'identity.avatar', 'identity.team',]; //identity.basic ,'chat:write:bot', incoming-webhook
+const OAUTH_SCOPES = ['identity.basic', 'identity.email', 'identity.avatar', 'identity.team',];
+//identity.basic ,'chat:write:bot', incoming-webhook, 'channels:read'
+//'identity.basic', 'identity.email', 'identity.avatar', 'identity.team',
+//'identity.basic', 'channels:read'
 
 
 class SlackStrategy extends SlackPassportStrategy {
@@ -49,7 +52,8 @@ passport.use(
     ) => {
       const user: Request['user'] = { accessToken, refreshToken, profile }
       logger.log("user", { user })
-      // logger.log("params", { params })
+      logger.log("accessToken", { accessToken })
+      // logger.log("refreshtoken", { refreshToken })
       return done(null, user)
     },
   ),
@@ -62,11 +66,8 @@ export const consumerExtractorMiddleware = async (req: Request, res: Response, n
     (req.query.jwt || req.query.state) as string,
   )
   // const community = await NetworkSettingsRepository.findUniqueOrThrow(state.networkId)
-
   req.state = state
-
   // req.consumerKey = community.newConsumerKey
   // req.consumerSecret = community.newConsumerSecret
-
   next()
 }

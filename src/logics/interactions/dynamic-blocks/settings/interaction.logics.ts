@@ -12,7 +12,7 @@ import { getInteractionNotSupportedError } from '../../../error.logics'
 
 import { globalLogger } from '@utils'
 import { getCallbackResponse } from './callback.logics'
-import { getConnectedSettingsResponse, getDisconnectedSettingsResponse } from './helpers'
+import { getConnectedNetworkSettingsResponse, getDisconnectedNetworkSettingsResponse } from './helpers'
 
 const logger = globalLogger.setContext(`SettingsDynamicBlock`)
 
@@ -21,20 +21,20 @@ const getNetworkSettingsInteractionResponse = async (options: {
   data: InteractionInput<NetworkSettings>
 }): Promise<InteractionWebhookResponse> => {
   logger.debug('getNetworkSettingsInteractionResponse called', { options })
-  
+
   const {
     networkId,
-    data: { interactionId, callbackId }, 
+    data: { interactionId, callbackId },
   } = options
 
   const networkSettings = await NetworkSettingsRepository.findUnique(networkId)
 
   if (callbackId) {
-    return getCallbackResponse({ networkId, networkSettings , data: options.data })
+    return getCallbackResponse({ networkId, networkSettings, data: options.data })
   }
 
-  if (!networkSettings){ 
-    return getDisconnectedSettingsResponse({interactionId})
+  if (!networkSettings) {
+    return getDisconnectedNetworkSettingsResponse({ interactionId })
   }
 
   if (!interactionId) {
@@ -45,8 +45,7 @@ const getNetworkSettingsInteractionResponse = async (options: {
       errorMessage: 'Interaction ID is required.',
     }
   }
-
-  return getConnectedSettingsResponse({ interactionId, settings: options.data })
+  return getConnectedNetworkSettingsResponse({ interactionId, settings: options.data })
 }
 
 export const getSettingsInteractionResponse = async (

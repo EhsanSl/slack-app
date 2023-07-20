@@ -4,5 +4,5 @@ export enum SettingsBlockCallback {
   OpenModal = 'open-modal',
   OpenToast = 'open-toast',
   AuthRedirect = 'redirect',
-  OauthRevoke = 'revoke',
+  AuthRevoke = 'revoke',
 }

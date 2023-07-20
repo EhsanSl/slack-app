@@ -1,19 +1,20 @@
-export interface SlackAuthProfile {
-  // // eslint-disable-next-line @typescript-eslint/naming-convention
-  ok: true,
-  access_token: string,
-  scope: string,
-  user_id: string,
-  team_id: string,
-  enterprise_id?: string,
-  team_name: string,
-  incoming_webhook: {
-    channel: string,
-    channel_id: string,
-    // "params": {}
-
-  }
+export interface User {
+  id: string,
+  name: string,
+  email: string,
 }
+
+export interface Team {
+  id: string,
+  name: string,
+  domain: string,
+}
+
+export interface SlackAuthProfile {
+  user: User
+  team: Team
+}
+
 export interface SlackAuthInfo {
   profile: SlackAuthProfile
   refreshToken: string

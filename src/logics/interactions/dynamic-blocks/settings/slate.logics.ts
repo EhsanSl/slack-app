@@ -8,7 +8,7 @@ import { readFile } from 'fs-extra'
 
 const logger = globalLogger.setContext(`SettingsDynamicBlock`)
 
-export const getNetworkSettingsSlate = async (
+export const getNetworkSettingsSlateII = async (
   settings: NetworkSettings,
 ): Promise<SlateDto> => {
   logger.debug('getNetworkSettingsSlate called', { settings })
@@ -21,13 +21,13 @@ export const getNetworkSettingsSlate = async (
   const slate = await convertor.toSlate({
     variables: {},
   })
-  logger.info("Hey this is the slate", {slate})
+  logger.info("Hey this is the slate", { slate })
   return slate
 }
 
 
-export const getDisconnectedNetworkSettingsSlate = async (): Promise<SlateDto> => {
-  logger.debug('getDisconnectedNetworkSettingsSlate called')
+export const getDisconnectedNetworkSettingsResponseII = async (): Promise<SlateDto> => {
+  logger.debug('getDisconnectedNetworkSettingsResponse called')
 
   const liquid = await readFile(
     join(__dirname, 'slates', 'network-settings.slate.liquid'),
@@ -37,11 +37,11 @@ export const getDisconnectedNetworkSettingsSlate = async (): Promise<SlateDto> =
   const slate = await convertor.toSlate({
     variables: {},
   })
-  logger.info("Hey this is the slate", {slate})
+  logger.info("Hey this is the slate", { slate })
   return slate
 }
 
-export const getNetworkSettingsModalSlate = async (
+export const getNetworkSettingsModalSlateII = async (
   settings: NetworkSettings,
 ): Promise<SlateDto> => {
   logger.debug('getNetworkSettingsModalSlate called', { settings })

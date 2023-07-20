@@ -2,21 +2,21 @@ import { InteractionType, WebhookStatus, WebhookType } from '@enums'
 import { InteractionInput, InteractionWebhookResponse } from '@interfaces'
 import { NetworkSettings } from '@prisma/client'
 import { rawSlateToDto } from '@tribeplatform/slate-kit/utils'
-import { getConnectedNetworkSettingsSlate, getDisconnectedSettingsSlate } from './slates'
+import { getConnectedNetworkSettingsSlate, getDisconnectedNetworkSettingsSlate } from './slates'
 
-export const getConnectedSettingsResponse = async (options: {
+export const getConnectedNetworkSettingsResponse = async (options: {
   interactionId: string
   settings: InteractionInput<NetworkSettings>
 }): Promise<InteractionWebhookResponse> => {
-  const { 
-    interactionId, 
+  const {
+    interactionId,
     settings
-  } = options 
+  } = options
 
   const slate = getConnectedNetworkSettingsSlate({
     settings,
   })
-  
+
   return {
     type: WebhookType.Interaction,
     status: WebhookStatus.Succeeded,
@@ -32,12 +32,12 @@ export const getConnectedSettingsResponse = async (options: {
   }
 }
 
-export const getDisconnectedSettingsResponse = async (options: {
+export const getDisconnectedNetworkSettingsResponse = async (options: {
   interactionId: string
 }): Promise<InteractionWebhookResponse> => {
-  
+
   const { interactionId } = options
-  const slate = getDisconnectedSettingsSlate()
+  const slate = getDisconnectedNetworkSettingsSlate()
 
   return {
     type: WebhookType.Interaction,
@@ -53,3 +53,4 @@ export const getDisconnectedSettingsResponse = async (options: {
     },
   }
 }
+

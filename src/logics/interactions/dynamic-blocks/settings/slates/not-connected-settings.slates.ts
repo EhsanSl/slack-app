@@ -4,7 +4,7 @@ import { SettingsBlockCallback } from '../constants'
 
 import { getOauthSettingsBlocks } from './oauth.slate'
 
-export const getDisconnectedSettingsSlate = (): RawSlateDto => {
+export const getDisconnectedNetworkSettingsSlate = (): RawSlateDto => {
   return {
     rootBlock: 'root',
     blocks: [

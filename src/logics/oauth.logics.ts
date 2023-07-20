@@ -1,5 +1,6 @@
 import { SERVER_URL } from '@config';
 import { SlackAuthInfo, SlackState } from '@interfaces';
+import { NetworkSettingsRepository } from '@repositories';
 import { Network } from '@tribeplatform/gql-client/types';
 import { getNetworkUrl, getSlackAppUrl, globalLogger, signJwt } from '@utils';
 
@@ -8,59 +9,42 @@ export const connectToSlack = async (options: {
   authInfo: SlackAuthInfo
   state: SlackState
 }) => {
-  logger.log('optionns', { options })
+  logger.log('OPTIONS', { options })
   const { authInfo, state } = options;
   const { networkId, actorId } = state;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     profile: {
-      // ok: true,
-      // access_token: string,
-      // scope: string,
-      // user_id: string,
-      // team_id: string,
-      // enterprise_id?: string,
-      team_name,
-      // incoming_webhook: {
-      //   channel: string,
-      //   channel_id: string,
-      //   // "params": {}
-    }
-    ,
+      user: { id: user_id, name: user_name, email },
+      team: { id: team_id, name: team_name, domain },
+    },
     accessToken: access,
     refreshToken: refresh,
   } = authInfo;
-  logger.log(team_name)
   logger.debug('connectToSlack called', { authInfo, state });
+  // logger.log("authinfo", authInfo)
+  // logger.log("user: ", authInfo.profile.user)
 
-  //   await NetworkSettingsRepository.upsert(networkId, {
-  //     id: String(id),
-  //     memberId: actorId, 
-  //     name: String(name),
-  //     email : email, 
+  await NetworkSettingsRepository.upsert(networkId, {
+    memberId: actorId,
 
-  //     createdAt : created_at, 
-  //     updatedAt: updated_at, 
+    userId: String(user_id),
+    userName: user_name,
+    email: email,
 
-  //     access,  
-  //     refresh, 
+    teamId: team_id,
+    teamName: team_name,
+    domain: domain,
 
-  //     graphqlUrl: GRAPHQL_URL,
-  //     error: '', 
+    access: access,
+    refresh: "",
+  });
 
-  //   });
 };
 
 export const getConnectSlackUrl = async (options: { network: Network; actorId: string }) => {
   const { network, actorId } = options;
-  console.log("****slack app url is", getSlackAppUrl(getNetworkUrl(network)));
-
-  // console.log("get connect slack url returns " , `${SERVER_URL}/oauth?jwt=${await signJwt({
-  //   networkId: network.id,
-  //   actorId,
-  //   redirectUrl: getSlackAppUrl(getNetworkUrl(network)),
-  // })}`)
-
+  logger.log("Slack App URL", getSlackAppUrl(getNetworkUrl(network)));
   return `${SERVER_URL}/oauth?jwt=${await signJwt({
     networkId: network.id,
     actorId,
